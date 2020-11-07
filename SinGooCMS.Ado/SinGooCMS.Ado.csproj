@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net4.6.1</TargetFrameworks>
+    <RestorePackagesPath>..\..\packages</RestorePackagesPath>
+    <Version>2.6.0</Version>
+    <Authors>jsonlee</Authors>
+    <Description>简单的轻量级数据库操作工具，支持SqlServer、MySql、Sqlite、Oracle</Description>
+    <Copyright>jsonlee</Copyright>
+    <PackageProjectUrl>https://github.com/SinGooCMS/SinGooCMSAdo</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SinGooCMS/SinGooCMSAdo</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>F:\jsonlee\netcore\SinGooCMS.Ado\SinGooCMS.Ado\SinGooCMS.Ado.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.1|AnyCPU'">
+    <DocumentationFile></DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net4.6.1'">
+    <Reference Include="System.configuration" />    
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />    
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+    <Reference Include="Microsoft.CSharp" />
+    <PackageReference Include="MySql.Data" Version="8.0.20" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="19.9.0" />  
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.5" />
+    <PackageReference Include="MySql.Data" Version="8.0.20" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.91" />
+  </ItemGroup>
+  
+</Project>

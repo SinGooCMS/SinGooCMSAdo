@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+    <ActiveDebugFramework>net4.6.1</ActiveDebugFramework>
+    <_LastSelectedProfileId>F:\jsonlee\SinGooCMSAdo-master\SinGooCMSAdo-master\SinGooCMS.Ado\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
+  </PropertyGroup>
+</Project>
