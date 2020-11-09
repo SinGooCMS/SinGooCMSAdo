@@ -6,7 +6,6 @@ SinGooCMS.Ado 支持netstandard2.1和net framework 4.6.1，原生sql语句操作
 using SinGooCMS.Ado;
 using SinGooCMS.Ado.Interface;
 ```
-项目是开源的，所有你可以改个命名空间！
 
 # 2、配置 appsetting.json
 ```c#
