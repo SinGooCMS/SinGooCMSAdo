@@ -129,10 +129,10 @@ namespace NetFrameworkTest
         }
 
         [Test]
-        public void UpdateTest2()
+        public async Task UpdateColumnTest()
         {
-            dbMySqlAccess.UpdateModel(new DbMaintenanceTestInfo() { UserName = "张飞" }, "UserName='刘备'"); //指定更新条件
-            Assert.AreEqual("张飞", dbMySqlAccess.Find<DbMaintenanceTestInfo>(10).UserName);
+            await dbMySqlAccess.UpdateColumnAsync<DbMaintenanceTestInfo>((p) => new DbMaintenanceTestInfo() { UserName = "赵云" }, "AutoID=@PKey", new DbParameter[] { dbMySqlAccess.MakeParam("@PKey", 1) }); //指定更新条件
+            Assert.AreEqual("赵云", (await dbMySqlAccess.FindAsync<DbMaintenanceTestInfo>(1)).UserName);
         }
 
         [Test]

@@ -111,7 +111,6 @@ namespace SinGooCMS.Ado.Interface
         /// <returns></returns>
         Task<IEnumerable<T>> GetValueListAsync<T>(string sql, DbParameter[] parameters = null);
 
-
         #region 返回一个对象实例
 
         /// <summary>
@@ -183,8 +182,9 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="condition">条件</param>
         /// <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
         /// <param name="filter">可选字段/列，默认是所有 *</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*") where T : class;
+        IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null) where T : class;
         /// <summary>
         /// 异步返回一个泛型集合
         /// </summary>
@@ -193,8 +193,9 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="condition">条件</param>
         /// <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
         /// <param name="filter">可选字段/列，默认是所有 *</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*") where T : class;
+        Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null) where T : class;
 
         #endregion
 
@@ -204,30 +205,34 @@ namespace SinGooCMS.Ado.Interface
         /// </summary>
         /// <param name="tableName">数据库表名</param>
         /// <param name="condition">条件</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        int GetCount(string tableName, string condition = "");
+        int GetCount(string tableName, string condition = "", DbParameter[] conditionParameters = null);
         /// <summary>
         /// 异步获取记录数
         /// </summary>
         /// <param name="tableName">数据库表名</param>
         /// <param name="condition">条件</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        Task<int> GetCountAsync(string tableName, string condition = "");
+        Task<int> GetCountAsync(string tableName, string condition = "", DbParameter[] conditionParameters = null);
 
         /// <summary>
         /// 获取记录数
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="condition">条件</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        int GetCount<T>(string condition = "");
+        int GetCount<T>(string condition = "", DbParameter[] conditionParameters = null);
         /// <summary>
         /// 异步获取记录数
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="condition">条件</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        Task<int> GetCountAsync<T>(string condition = "");
+        Task<int> GetCountAsync<T>(string condition = "", DbParameter[] conditionParameters = null);
 
         /// <summary>
         /// 分页返回一个数据表
@@ -238,8 +243,9 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="pageIndex">页号</param>
         /// <param name="pageSize">每页记录数</param>
         /// <param name="filter">可选字段/列，默认是所有 *</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*");
+        DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null);
 
         /// <summary>
         /// 分页，并返回总记录数，总页数
@@ -250,8 +256,9 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="pageIndex">页号</param>
         /// <param name="pageSize">每页记录数</param>
         /// <param name="filter">可选字段/列，默认是所有 *</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*") where T : class;
+        IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null) where T : class;
         /// <summary>
         /// 异步分页
         /// </summary>
@@ -261,29 +268,15 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="pageIndex">页号</param>
         /// <param name="pageSize">每页记录数</param>
         /// <param name="filter">可选字段/列，默认是所有 *</param>
+        /// <param name="conditionParameters">条件参数集合</param>
         /// <returns></returns>
-        Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*") where T : class;
+        Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null) where T : class;
 
         #endregion
 
         #endregion
 
-        #region ------插入操作------
-
-        /// <summary>
-        /// 插入到数据库表并返回主键值（默认为自增主键）
-        /// </summary>
-        /// <typeparam name="T">泛型</typeparam>
-        /// <param name="model">对象实例</param>
-        /// <returns></returns>
-        int InsertModel<T>(T model) where T : class;
-        /// <summary>
-        /// 异步插入到数据库表并返回主键值（默认为自增主键）
-        /// </summary>
-        /// <typeparam name="T">泛型</typeparam>
-        /// <param name="model">对象实例</param>
-        /// <returns></returns>
-        Task<int> InsertModelAsync<T>(T model) where T : class;
+        #region ------插入操作------        
 
         /// <summary>
         /// 插入到指定表并返回主键值
@@ -292,7 +285,7 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="model">对象实例</param>
         /// <param name="tableName">数据库表名</param>
         /// <returns></returns>
-        int InsertModel<T>(T model, string tableName) where T : class;
+        int InsertModel<T>(T model, string tableName = "") where T : class;
         /// <summary>
         /// 异步插入到指定表并返回主键值
         /// </summary>
@@ -300,7 +293,7 @@ namespace SinGooCMS.Ado.Interface
         /// <param name="model">对象实例</param>
         /// <param name="tableName">数据库表名</param>
         /// <returns></returns>
-        Task<int> InsertModelAsync<T>(T model, string tableName) where T : class;
+        Task<int> InsertModelAsync<T>(T model, string tableName = "") where T : class;
 
         #endregion
 
@@ -311,17 +304,34 @@ namespace SinGooCMS.Ado.Interface
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="model">对象实例</param>
-        /// <param name="condition">指定的条件（不提供则按按主键更新）,优先</param>
         /// <returns></returns>
-        bool UpdateModel<T>(T model, string condition = "") where T : class;
+        bool UpdateModel<T>(T model) where T : class;
         /// <summary>
         /// 异步更新数据表
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="model">对象实例</param>
-        /// <param name="condition">指定的条件（不提供则按按主键更新）,优先</param>
         /// <returns></returns>
-        Task<bool> UpdateModelAsync<T>(T model, string condition = "") where T : class;
+        Task<bool> UpdateModelAsync<T>(T model) where T : class;
+
+        /// <summary>
+        /// 更新列
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="columns">要更新的列如 (p)=>new UserInfo{UserName="jsonlee"}</param>
+        /// <param name="condition">条件 如不提供将更新所有</param>
+        /// <param name="conditionParameters">条件参数集合</param>
+        /// <returns></returns>
+        bool UpdateColumn<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null) where T : class;
+        /// <summary>
+        /// 异步更新列
+        /// </summary>
+        /// <typeparam name="T">泛型</typeparam>
+        /// <param name="columns">要更新的列如 (p)=>new UserInfo{UserName="jsonlee"}</param>
+        /// <param name="condition">条件 如不提供将更新所有</param>
+        /// <param name="conditionParameters">条件参数集合</param>
+        /// <returns></returns>
+        Task<bool> UpdateColumnAsync<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null) where T : class;
 
         #endregion
 

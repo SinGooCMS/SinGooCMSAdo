@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,7 +50,7 @@ namespace SinGooCMS.Ado.DbAccess
             return GetModel<T>(await GetDataReaderAsync($"select * from {tableName} where {key} = :KeyValue and rownum<=1", new DbParameter[] { MakeParam(":KeyValue", keyValue) }));
         }
 
-        public override IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*")
+        public override IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null)
         {
             //select * from (select * from table) where rownum <= 3 order by rownum asc
             string tableName = AttrAssistant.GetTableName(typeof(T));
@@ -68,9 +69,9 @@ namespace SinGooCMS.Ado.DbAccess
             if (topNum > 0)
                 builder.AppendFormat(" where rownum<={0}", topNum);
 
-            return GetList<T>(builder.ToString());
+            return GetList<T>(builder.ToString(), conditionParameters);
         }
-        public override async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*")
+        public override async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null)
         {
             //select * from (select * from table) where rownum <= 3 order by rownum asc
             string tableName = AttrAssistant.GetTableName(typeof(T));
@@ -89,20 +90,20 @@ namespace SinGooCMS.Ado.DbAccess
             if (topNum > 0)
                 builder.AppendFormat(" where rownum<={0}", topNum);
 
-            return await GetListAsync<T>(builder.ToString());
+            return await GetListAsync<T>(builder.ToString(), conditionParameters);
         }
 
         #region 分页
 
-        public override DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             if (string.IsNullOrEmpty(condition))
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             //SELECT * FROM (SELECT t.*,ROWNUM r FROM TABLE t WHERE ROWNUM <= pageNumber*pageSize) WHERE r >(pageNumber)*pageSize
             var builder = new StringBuilder();
@@ -112,15 +113,15 @@ namespace SinGooCMS.Ado.DbAccess
                                     (
                                         select * from {1} {2} {3}
                                     ) t where rownum<={5}
-                                ) where rowno>={4}",
+                                ) {6} where rowno>={4}",
                                 filter, tableName,
                                 condition.IsNullOrEmpty() ? "" : " where " + condition,
-                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPage, endPage);
+                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPosition, endPosition, Utils.SinGooPagerAlias);
 
-            return GetDataTable(builder.ToString());
+            return GetDataTable(builder.ToString(), conditionParameters);
         }
 
-        public override IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             var lstResult = new List<T>();
             T tItem = default(T);
@@ -129,10 +130,10 @@ namespace SinGooCMS.Ado.DbAccess
             if (string.IsNullOrEmpty(condition))
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
             builder.AppendFormat(@"select {0} from
@@ -141,12 +142,12 @@ namespace SinGooCMS.Ado.DbAccess
                                     (
                                         select * from {1} {2} {3}
                                     ) t where rownum<={5}
-                                ) where rowno>={4}",
+                                ) {6} where rowno>={4}",
                                 filter, tableName,
                                 condition.IsNullOrEmpty() ? "" : " where " + condition,
-                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPage, endPage);
+                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPosition, endPosition, Utils.SinGooPagerAlias);
 
-            var reader = GetDataReader(builder.ToString());
+            var reader = GetDataReader(builder.ToString(), conditionParameters);
             var refBuilder = ReflectionBuilder<T>.CreateBuilder(reader, dbProviderType);
             while (reader.Read())
             {
@@ -157,7 +158,7 @@ namespace SinGooCMS.Ado.DbAccess
             reader.Close();
             return lstResult;
         }
-        public override async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             var lstResult = new List<T>();
             T tItem = default(T);
@@ -166,10 +167,10 @@ namespace SinGooCMS.Ado.DbAccess
             if (string.IsNullOrEmpty(condition))
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             StringBuilder builder = new StringBuilder();
             builder.AppendFormat(@"select {0} from
@@ -178,12 +179,12 @@ namespace SinGooCMS.Ado.DbAccess
                                     (
                                         select * from {1} {2} {3}
                                     ) t where rownum<={5}
-                                ) where rowno>={4}",
+                                ) {6} where rowno>={4}",
                                 filter, tableName,
                                 condition.IsNullOrEmpty() ? "" : " where " + condition,
-                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPage, endPage);
+                                sort.IsNullOrEmpty() ? "" : " order by " + sort, startPosition, endPosition, Utils.SinGooPagerAlias);
 
-            var reader = await GetDataReaderAsync(builder.ToString());
+            var reader = await GetDataReaderAsync(builder.ToString(), conditionParameters);
             var refBuilder = ReflectionBuilder<T>.CreateBuilder(reader, dbProviderType);
             while (reader.Read())
             {
@@ -201,7 +202,7 @@ namespace SinGooCMS.Ado.DbAccess
 
         #region 插入
 
-        public override int InsertModel<T>(T model, string tableName)
+        public override int InsertModel<T>(T model, string tableName = "")
         {
             var dictSql = new Dictionary<string, (string, DbParameter[])>();
 
@@ -210,6 +211,9 @@ namespace SinGooCMS.Ado.DbAccess
             var builderParams = new StringBuilder(" ( ");
             var lstParams = new List<DbParameter>();
             bool isKeyAutoSEQ = false;
+
+            if (tableName.IsNullOrEmpty())
+                tableName = AttrAssistant.GetTableName(typeof(T));
 
             foreach (PropertyInfo property in arrProperty)
             {
@@ -221,7 +225,7 @@ namespace SinGooCMS.Ado.DbAccess
                     builderParams.AppendFormat("SEQ_{0}.nextval, ", tableName.ToUpper());
                 }
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                else if (!AttrAssistant.IsNotMapped(property))
+                else if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
 
@@ -251,7 +255,7 @@ namespace SinGooCMS.Ado.DbAccess
             return (result != null && result.Count() == 2) ? result.ToList()[1] : 0;
         }
 
-        public override async Task<int> InsertModelAsync<T>(T model, string tableName)
+        public override async Task<int> InsertModelAsync<T>(T model, string tableName = "")
         {
             var dictSql = new Dictionary<string, (string, DbParameter[])>();
 
@@ -260,6 +264,9 @@ namespace SinGooCMS.Ado.DbAccess
             var builderParams = new StringBuilder(" ( ");
             var lstParams = new List<DbParameter>();
             bool isKeyAutoSEQ = false;
+
+            if (tableName.IsNullOrEmpty())
+                tableName = AttrAssistant.GetTableName(typeof(T));
 
             foreach (PropertyInfo property in arrProperty)
             {
@@ -271,7 +278,7 @@ namespace SinGooCMS.Ado.DbAccess
                     builderParams.Append("SEQ_" + tableName + ".nextval, ");
                 }
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                else if (!AttrAssistant.IsNotMapped(property))
+                else if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
 
@@ -310,9 +317,8 @@ namespace SinGooCMS.Ado.DbAccess
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
-        /// <param name="condition">指定的条件（不提供则按按主键更新）,优先</param>
         /// <returns></returns>
-        public override bool UpdateModel<T>(T model, string condition = "")
+        public override bool UpdateModel<T>(T model)
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
@@ -321,7 +327,7 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (PropertyInfo property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (property.GetType() != typeof(System.DBNull) && !AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
                     builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
@@ -330,20 +336,13 @@ namespace SinGooCMS.Ado.DbAccess
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
-            if (!condition.IsNullOrEmpty())
+            string key = AttrAssistant.GetKey(typeof(T));
+            if (!key.IsNullOrEmpty())
             {
-                builderSQL.Append(" where " + condition);
-            }
-            else
-            {
-                string key = AttrAssistant.GetKey(typeof(T));
-                if (!key.IsNullOrEmpty())
-                {
-                    //主键值
-                    object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
-                    builderSQL.AppendFormat(" where {0}=:primaryKeyUniqueValue ", key);
-                    lstParams.Add(MakeParam(":primaryKeyUniqueValue", primaryKeyUniqueValue));
-                }
+                //主键值
+                object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
+                builderSQL.AppendFormat(" where {0}=:primaryKeyUniqueValue ", key);
+                lstParams.Add(MakeParam(":primaryKeyUniqueValue", primaryKeyUniqueValue));
             }
 
             return ExecSQL(" update " + AttrAssistant.GetTableName(typeof(T)) + " set " + builderSQL.ToString(), lstParams.ToArray());
@@ -354,9 +353,8 @@ namespace SinGooCMS.Ado.DbAccess
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="model"></param>
-        /// <param name="condition">指定的条件（不提供则按按主键更新）,优先</param>
         /// <returns></returns>
-        public override async Task<bool> UpdateModelAsync<T>(T model, string condition = "")
+        public override async Task<bool> UpdateModelAsync<T>(T model)
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
@@ -365,7 +363,7 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (PropertyInfo property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (property.GetType() != typeof(System.DBNull) && !AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
                     builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
@@ -374,23 +372,64 @@ namespace SinGooCMS.Ado.DbAccess
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
-            if (!condition.IsNullOrEmpty())
+            string key = AttrAssistant.GetKey(typeof(T));
+            if (!string.IsNullOrEmpty(key))
             {
-                builderSQL.Append(" where " + condition);
-            }
-            else
-            {
-                string key = AttrAssistant.GetKey(typeof(T));
-                if (!string.IsNullOrEmpty(key))
-                {
-                    //主键值
-                    object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
-                    builderSQL.AppendFormat(" where {0}=:primaryKeyUniqueValue ", key);
-                    lstParams.Add(MakeParam(":primaryKeyUniqueValue", primaryKeyUniqueValue));
-                }
+                //主键值
+                object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
+                builderSQL.AppendFormat(" where {0}=:primaryKeyUniqueValue ", key);
+                lstParams.Add(MakeParam(":primaryKeyUniqueValue", primaryKeyUniqueValue));
             }
 
             return await ExecSQLAsync(" update " + AttrAssistant.GetTableName(typeof(T)) + " set " + builderSQL.ToString(), lstParams.ToArray());
+        }
+
+        public override bool UpdateColumn<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null)
+        {
+            var builder = new StringBuilder();
+            var parameters = new List<DbParameter>();
+            builder.Append($" update {AttrAssistant.GetTableName(typeof(T))} set ");
+
+            var bindings = (columns.Body as MemberInitExpression).Bindings;
+            foreach (var item in bindings)
+            {
+                builder.AppendFormat("{0}=:{0},", item.Member.Name);
+                parameters.Add(MakeParam(":" + item.Member.Name, ((item as MemberAssignment).Expression as ConstantExpression).Value));
+            }
+
+            string sql = builder.ToString().TrimEnd(',');
+            if (!condition.IsNullOrEmpty())
+            {
+                sql += " where " + condition;
+                if (conditionParameters != null)
+                    parameters.AddRange(conditionParameters);
+            }
+
+            return ExecSQL(sql, parameters.ToArray());
+        }
+
+        public override async Task<bool> UpdateColumnAsync<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null)
+        {
+            var builder = new StringBuilder();
+            var parameters = new List<DbParameter>();
+            builder.Append($" update {AttrAssistant.GetTableName(typeof(T))} set ");
+
+            var bindings = (columns.Body as MemberInitExpression).Bindings;
+            foreach (var item in bindings)
+            {
+                builder.AppendFormat("{0}=:{0},", item.Member.Name);
+                parameters.Add(MakeParam(":" + item.Member.Name, ((item as MemberAssignment).Expression as ConstantExpression).Value));
+            }
+
+            string sql = builder.ToString().TrimEnd(',');
+            if (!condition.IsNullOrEmpty())
+            {
+                sql += " where " + condition;
+                if (conditionParameters != null)
+                    parameters.AddRange(conditionParameters);
+            }
+
+            return await ExecSQLAsync(sql, parameters.ToArray());
         }
 
         #endregion

@@ -16,6 +16,7 @@ using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using SinGooCMS.Ado.Interface;
 using Oracle.ManagedDataAccess.Client;
+using System.Linq.Expressions;
 
 namespace SinGooCMS.Ado.DbAccess
 {
@@ -218,41 +219,37 @@ namespace SinGooCMS.Ado.DbAccess
             return lstResult;
         }
 
-        public virtual IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*") where T : class
+        public virtual IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null) where T : class
             => null;
-        public virtual async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*") where T : class
+        public virtual async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null) where T : class
             => null;
 
         #region 分页
 
-        public virtual int GetCount(string tableName, string condition = "")
+        public virtual int GetCount(string tableName, string condition = "", DbParameter[] conditionParameters = null)
         {
-            var builder = new StringBuilder($"select count(*) from {tableName}");
-            if (!condition.IsNullOrEmpty())
-                builder.Append(" where " + condition);
-
-            return GetValue<int>(builder.ToString());
+            return condition.IsNullOrEmpty()
+                ? GetValue<int>($" select count(*) from {tableName} ")
+                : GetValue<int>($" select count(*) from {tableName} where {condition} ", conditionParameters);
         }
-        public virtual async Task<int> GetCountAsync(string tableName, string condition = "")
+        public virtual async Task<int> GetCountAsync(string tableName, string condition = "", DbParameter[] conditionParameters = null)
         {
-            var builder = new StringBuilder($"select count(*) from {tableName}");
-            if (!condition.IsNullOrEmpty())
-                builder.Append(" where " + condition);
-
-            return await GetValueAsync<int>(builder.ToString());
+            return condition.IsNullOrEmpty()
+                ? await GetValueAsync<int>($" select count(*) from {tableName} ")
+                : await GetValueAsync<int>($" select count(*) from {tableName} where {condition} ", conditionParameters);
         }
 
-        public virtual int GetCount<T>(string condition = "") =>
+        public virtual int GetCount<T>(string condition = "", DbParameter[] conditionParameters = null) =>
             GetCount(AttrAssistant.GetTableName(typeof(T)), condition);
-        public virtual async Task<int> GetCountAsync<T>(string condition = "") =>
+        public virtual async Task<int> GetCountAsync<T>(string condition = "", DbParameter[] conditionParameters = null) =>
             await GetCountAsync(AttrAssistant.GetTableName(typeof(T)), condition);
 
-        public virtual DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public virtual DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         => null;
 
-        public virtual IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*") where T : class
+        public virtual IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null) where T : class
         => null;
-        public virtual async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*") where T : class
+        public virtual async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null) where T : class
         => null;
 
         #endregion
@@ -261,22 +258,16 @@ namespace SinGooCMS.Ado.DbAccess
 
         #region 插入
 
-        public virtual int InsertModel<T>(T model) where T : class =>
-            InsertModel(model, AttrAssistant.GetTableName(typeof(T)));
-
-        public virtual async Task<int> InsertModelAsync<T>(T model) where T : class =>
-            await InsertModelAsync(model, AttrAssistant.GetTableName(typeof(T)));
-
-        public virtual int InsertModel<T>(T model, string tableName) where T : class
+        public virtual int InsertModel<T>(T model, string tableName = "") where T : class
         => 0;
-        public virtual async Task<int> InsertModelAsync<T>(T model, string tableName) where T : class
+        public virtual async Task<int> InsertModelAsync<T>(T model, string tableName = "") where T : class
         => 0;
 
         #endregion
 
         #region 更新
 
-        public virtual bool UpdateModel<T>(T model, string condition = "") where T : class
+        public virtual bool UpdateModel<T>(T model) where T : class
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
@@ -285,7 +276,7 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (var property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (property.GetType() != typeof(System.DBNull) && !AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
                     builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
@@ -294,26 +285,19 @@ namespace SinGooCMS.Ado.DbAccess
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
-            if (!condition.IsNullOrEmpty())
+            string key = AttrAssistant.GetKey(typeof(T));
+            if (!key.IsNullOrEmpty())
             {
-                builderSQL.Append(" where " + condition);
-            }
-            else
-            {
-                string key = AttrAssistant.GetKey(typeof(T));
-                if (!key.IsNullOrEmpty())
-                {
-                    //主键值
-                    object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
-                    builderSQL.AppendFormat(" where {0}=@primaryKeyUniqueValue ", key);
-                    lstParams.Add(MakeParam("@primaryKeyUniqueValue", primaryKeyUniqueValue));
-                }
+                //主键值
+                object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
+                builderSQL.AppendFormat(" where {0}=@primaryKeyUniqueValue ", key);
+                lstParams.Add(MakeParam("@primaryKeyUniqueValue", primaryKeyUniqueValue));
             }
 
             return ExecSQL(" update " + AttrAssistant.GetTableName(typeof(T)) + " set " + builderSQL.ToString(), lstParams.ToArray());
         }
 
-        public virtual async Task<bool> UpdateModelAsync<T>(T model, string condition = "") where T : class
+        public virtual async Task<bool> UpdateModelAsync<T>(T model) where T : class
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
@@ -322,7 +306,7 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (var property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (property.GetType() != typeof(System.DBNull) && !AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
                     builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
@@ -331,23 +315,64 @@ namespace SinGooCMS.Ado.DbAccess
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
-            if (!condition.IsNullOrEmpty())
+            string key = AttrAssistant.GetKey(typeof(T));
+            if (!key.IsNullOrEmpty())
             {
-                builderSQL.Append(" where " + condition);
-            }
-            else
-            {
-                string key = AttrAssistant.GetKey(typeof(T));
-                if (!key.IsNullOrEmpty())
-                {
-                    //主键值
-                    object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
-                    builderSQL.AppendFormat(" where {0}=@primaryKeyUniqueValue ", key);
-                    lstParams.Add(MakeParam("@primaryKeyUniqueValue", primaryKeyUniqueValue));
-                }
+                //主键值
+                object primaryKeyUniqueValue = RefProperty.GetPropertyValue(model, key);
+                builderSQL.AppendFormat(" where {0}=@primaryKeyUniqueValue ", key);
+                lstParams.Add(MakeParam("@primaryKeyUniqueValue", primaryKeyUniqueValue));
             }
 
             return await ExecSQLAsync(" update " + AttrAssistant.GetTableName(typeof(T)) + " set " + builderSQL.ToString(), lstParams.ToArray());
+        }
+
+        public virtual bool UpdateColumn<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null) where T : class
+        {
+            var builder = new StringBuilder();
+            var parameters = new List<DbParameter>();
+            builder.Append($" update {AttrAssistant.GetTableName(typeof(T))} set ");
+
+            var bindings = (columns.Body as MemberInitExpression).Bindings;
+            foreach (var item in bindings)
+            {
+                builder.AppendFormat("{0}=@{0},", item.Member.Name);
+                parameters.Add(MakeParam("@" + item.Member.Name, ((item as MemberAssignment).Expression as ConstantExpression).Value));
+            }
+
+            string sql = builder.ToString().TrimEnd(',');
+            if (!condition.IsNullOrEmpty())
+            {
+                sql += " where " + condition;
+                if (conditionParameters != null)
+                    parameters.AddRange(conditionParameters);
+            }
+
+            return ExecSQL(sql, parameters.ToArray());
+        }
+
+        public virtual async Task<bool> UpdateColumnAsync<T>(Expression<Func<T, T>> columns, string condition = "", DbParameter[] conditionParameters = null) where T : class
+        {
+            var builder = new StringBuilder();
+            var parameters = new List<DbParameter>();
+            builder.Append($" update {AttrAssistant.GetTableName(typeof(T))} set ");
+
+            var bindings = (columns.Body as MemberInitExpression).Bindings;
+            foreach (var item in bindings)
+            {
+                builder.AppendFormat("{0}=@{0},", item.Member.Name);
+                parameters.Add(MakeParam("@" + item.Member.Name, ((item as MemberAssignment).Expression as ConstantExpression).Value));
+            }
+
+            string sql = builder.ToString().TrimEnd(',');
+            if (!condition.IsNullOrEmpty())
+            {
+                sql += " where " + condition;
+                if (conditionParameters != null)
+                    parameters.AddRange(conditionParameters);
+            }
+
+            return await ExecSQLAsync(sql, parameters.ToArray());
         }
 
         #endregion

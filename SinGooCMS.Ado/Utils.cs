@@ -14,6 +14,9 @@ namespace SinGooCMS.Ado
 {
     internal class Utils
     {
+        //分页表最终别名
+        public readonly static string SinGooPagerAlias = "SinGooPagerAlias";
+
 #if NETSTANDARD2_1
         public static IConfiguration Configuration { get; set; }
         static Utils()
@@ -128,12 +131,7 @@ namespace SinGooCMS.Ado
         /// <returns></returns>
         public static bool IsNullOrEmpty(this object obj)
         {
-            if (obj == null)
-                return true;
-            else if (obj.ToString().Trim().Length == 0)
-                return true;
-            else
-                return false;
+            return obj == null || obj.ToString().Trim().Length == 0;
         }
     }
 

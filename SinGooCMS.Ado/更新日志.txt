@@ -1,0 +1,15 @@
+﻿sqlserver2012 以上版本，使用新的分页方式
+select {filter}
+from {table}
+order by {sort}
+offset {(page-1)*pagesize} rows fetch next {pagesize} rows only
+
+如：
+select * 
+from cms_Content
+order by Sort asc,AutoID desc
+offset 5 rows fetch next 5 rows only
+
+分页查询加上最终表别名，取别名为SinGooPagerAlias
+
+增加列更新方法：UpdateColumn、UpdateColumnAsync，用于批量更新列

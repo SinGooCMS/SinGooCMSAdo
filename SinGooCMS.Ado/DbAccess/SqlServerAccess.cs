@@ -50,9 +50,9 @@ namespace SinGooCMS.Ado.DbAccess
             return GetModel<T>(await GetDataReaderAsync($"select top 1 * from {tableName} where {key} = @KeyValue", new DbParameter[] { MakeParam("@KeyValue", keyValue) }));
         }
 
-        public override IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*")
+        public override IEnumerable<T> GetList<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null)
         {
-            string tableName = AttrAssistant.GetTableName(typeof(T));            
+            string tableName = AttrAssistant.GetTableName(typeof(T));
 
             if (filter.IsNullOrEmpty())
                 filter = "*";
@@ -66,11 +66,11 @@ namespace SinGooCMS.Ado.DbAccess
             if (!sort.IsNullOrEmpty())
                 builder.AppendFormat(" order by {0} ", sort);
 
-            return GetList<T>(builder.ToString());
+            return GetList<T>(builder.ToString(), conditionParameters);
         }
-        public override async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*")
+        public override async Task<IEnumerable<T>> GetListAsync<T>(int topNum = 0, string condition = "", string sort = "", string filter = "*", DbParameter[] conditionParameters = null)
         {
-            string tableName = AttrAssistant.GetTableName(typeof(T));            
+            string tableName = AttrAssistant.GetTableName(typeof(T));
 
             if (filter.IsNullOrEmpty())
                 filter = "*";
@@ -84,57 +84,83 @@ namespace SinGooCMS.Ado.DbAccess
             if (!sort.IsNullOrEmpty())
                 builder.AppendFormat(" order by {0} ", sort);
 
-            return await GetListAsync<T>(builder.ToString());
+            return await GetListAsync<T>(builder.ToString(), conditionParameters);
         }
 
         #region 分页
 
-        public override DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             if (condition.IsNullOrEmpty())
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            int offsetPosition = (pageIndex - 1) * pageSize;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            builder.AppendFormat(@"select {0}
+            if (GetVerNo().GetAwaiter().GetResult() >= 11)
+            {
+                builder.AppendFormat(@"select {0}
+                                    from {1} as {6}
+                                    where {2}
+                                    order by {3}
+                                    offset {4} rows fetch next {5} rows only",
+                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+            }
+            else
+            {
+                builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
-                                          from  {1}
-                                          where {2}
-                                        ) as result
+                                    from  {1}
+                                    where {2}
+                                ) as {6}
                                 where rownum between {4} and {5}
-                                order by {3}", filter, tableName, condition, sort, startPage, endPage);
+                                order by {3}", filter, tableName, condition, sort, startPosition, endPosition, Utils.SinGooPagerAlias);
+            }
 
-            return GetDataTable(builder.ToString());
+            return GetDataTable(builder.ToString(), conditionParameters);
         }
 
-        public override IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             var lstResult = new List<T>();
-            T tItem = default(T);            
+            T tItem = default(T);
             string tableName = AttrAssistant.GetTableName(typeof(T)); //表名
 
             if (condition.IsNullOrEmpty())
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            int offsetPosition = (pageIndex - 1) * pageSize;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            builder.AppendFormat(@"select {0}
+            if (GetVerNo().GetAwaiter().GetResult() >= 11)
+            {
+                builder.AppendFormat(@"select {0}
+                                    from {1} as {6}
+                                    where {2}
+                                    order by {3}
+                                    offset {4} rows fetch next {5} rows only",
+                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+            }
+            else
+            {
+                builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
-                                          from  {1}
-                                          where {2}
-                                        ) as result
+                                    from  {1}
+                                    where {2}
+                                ) as {6}
                                 where rownum between {4} and {5}
-                                order by {3}", filter, tableName, condition, sort, startPage, endPage);
+                                order by {3}", filter, tableName, condition, sort, startPosition, endPosition, Utils.SinGooPagerAlias);
+            }
 
-            var reader = GetDataReader(builder.ToString());
+            var reader = GetDataReader(builder.ToString(), conditionParameters);
             var refBuilder = ReflectionBuilder<T>.CreateBuilder(reader);
             while (reader.Read())
             {
@@ -145,30 +171,43 @@ namespace SinGooCMS.Ado.DbAccess
             reader.Close();
             return lstResult;
         }
-        public override async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*")
+        public override async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
             var lstResult = new List<T>();
-            T tItem = default(T);            
+            T tItem = default(T);
             string tableName = AttrAssistant.GetTableName(typeof(T)); //表名
 
             if (condition.IsNullOrEmpty())
                 condition = "1=1";
 
-            //起始页号
-            int startPage = (pageIndex - 1) * pageSize + 1;
-            //截止页号
-            int endPage = pageIndex * pageSize;
+            //起始记录
+            int startPosition = (pageIndex - 1) * pageSize + 1;
+            int offsetPosition = (pageIndex - 1) * pageSize;
+            //截止记录
+            int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            builder.AppendFormat(@"select {0}
+            if (await GetVerNo() >= 11)
+            {
+                builder.AppendFormat(@"select {0}
+                                    from {1} as {6}
+                                    where {2}
+                                    order by {3}
+                                    offset {4} rows fetch next {5} rows only",
+                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+            }
+            else
+            {
+                builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
-                                          from  {1}
-                                          where {2}
-                                        ) as result
+                                    from  {1}
+                                    where {2}
+                                ) as {6}
                                 where rownum between {4} and {5}
-                                order by {3}", filter, tableName, condition, sort, startPage, endPage);
+                                order by {3}", filter, tableName, condition, sort, startPosition, endPosition, Utils.SinGooPagerAlias);
+            }
 
-            var reader = await GetDataReaderAsync(builder.ToString());
+            var reader = await GetDataReaderAsync(builder.ToString(), conditionParameters);
             var refBuilder = ReflectionBuilder<T>.CreateBuilder(reader);
             while (reader.Read())
             {
@@ -186,17 +225,20 @@ namespace SinGooCMS.Ado.DbAccess
 
         #region 插入
 
-        public override int InsertModel<T>(T model, string tableName)
+        public override int InsertModel<T>(T model, string tableName = "")
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
             var builderParams = new StringBuilder(" ( ");
             var lstParams = new List<DbParameter>();
 
+            if (tableName.IsNullOrEmpty())
+                tableName = AttrAssistant.GetTableName(typeof(T));
+
             foreach (PropertyInfo property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除 如果是自增Key，也要加上NotMapped，因为有可能key是非自增列
-                if (!AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
 
@@ -217,17 +259,20 @@ namespace SinGooCMS.Ado.DbAccess
             return objTemp.ToInt();
         }
 
-        public override async Task<int> InsertModelAsync<T>(T model, string tableName)
+        public override async Task<int> InsertModelAsync<T>(T model, string tableName = "")
         {
             var arrProperty = typeof(T).GetProperties();
             var builderSQL = new StringBuilder();
             var builderParams = new StringBuilder(" ( ");
             var lstParams = new List<DbParameter>();
 
+            if (tableName.IsNullOrEmpty())
+                tableName = AttrAssistant.GetTableName(typeof(T));
+
             foreach (PropertyInfo property in arrProperty)
             {
                 //NotMapped 是自定义的字段，不属于表，所以要排除 如果是自增Key，也要加上NotMapped，因为有可能key是非自增列
-                if (!AttrAssistant.IsNotMapped(property))
+                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
                 {
                     object obj = property.GetValue(model, null);
 
@@ -293,5 +338,14 @@ namespace SinGooCMS.Ado.DbAccess
 
 
         #endregion
+
+        /// <summary>
+        /// 读取版本号 sql2008=10,sql2012=11,sql2019=15;sql2012以上支持offset fatch next分页方式
+        /// </summary>
+        /// <returns></returns>
+        private async Task<int> GetVerNo()
+        {
+            return await GetValueAsync<int>("select left(cast(SERVERPROPERTY('ProductVersion') as varchar),2)");
+        }
     }
 }

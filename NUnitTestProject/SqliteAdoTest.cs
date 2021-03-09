@@ -13,7 +13,7 @@ namespace NUnitTestProject
 {
     public class SqliteAdoTest
     {
-        IDbAccess dbSqliteAccess => DbProvider.Create(DbProviderType.Sqlite, @"Data Source=F:\jsonlee\SinGooCMS-v1.6-20201010\SinGooCMS.UI\SinGooCMS.WebUI\db\singootop.db");
+        IDbAccess dbSqliteAccess => DbProvider.Create(DbProviderType.Sqlite, @"Data Source=F:\jsonlee\SinGooCMS\code\SinGooCMS.UI\SinGooCMS.WebUI\db\singootop.db");
         IDbMaintenance dbMaintenance => new SqliteDbMaintenance().Set(dbSqliteAccess);
 
         public SqliteAdoTest()
@@ -89,7 +89,7 @@ namespace NUnitTestProject
             int totalCount = dbSqliteAccess.GetCount<DbMaintenanceTestInfo>();
             int totalPage = totalCount % 10 == 0 ? totalCount / 10 : (1 + totalCount / 10);
             //分页测试
-            var pagerData = dbSqliteAccess.GetPagerList<DbMaintenanceTestInfo>("", "AutoID desc", 25, 10);
+            var pagerData = dbSqliteAccess.GetPagerList<DbMaintenanceTestInfo>("", "AutoID asc", 2, 10);
             Console.WriteLine($"总记录数：{totalCount} 总页数：{totalPage}");
             Assert.AreEqual(10, pagerData.Count());
         }
@@ -100,12 +100,12 @@ namespace NUnitTestProject
             dbSqliteAccess.UpdateModel(new DbMaintenanceTestInfo() { AutoID = 10, UserName = "刘备" });
             Assert.AreEqual("刘备", dbSqliteAccess.Find<DbMaintenanceTestInfo>(10).UserName);
         }
-
+        
         [Test]
-        public void UpdateTest2()
+        public async Task UpdateColumnTest()
         {
-            dbSqliteAccess.UpdateModel(new DbMaintenanceTestInfo() { UserName = "张飞" }, "UserName='刘备'"); //指定更新条件
-            Assert.AreEqual("张飞", dbSqliteAccess.Find<DbMaintenanceTestInfo>(10).UserName);
+            await dbSqliteAccess.UpdateColumnAsync<DbMaintenanceTestInfo>((p) => new DbMaintenanceTestInfo() { UserName = "赵云" }, "AutoID=@PKey", new DbParameter[] { dbSqliteAccess.MakeParam("@PKey", 1) }); //指定更新条件
+            Assert.AreEqual("赵云", (await dbSqliteAccess.FindAsync<DbMaintenanceTestInfo>(1)).UserName);
         }
 
         [Test]

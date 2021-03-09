@@ -6,21 +6,21 @@
     <members>
         <member name="M:SinGooCMS.Ado.AttrAssistant.GetTableName(System.Type)">
             <summary>
-            表名
+            读取数据库表名
             </summary>
             <param name="type"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.AttrAssistant.GetKey(System.Type)">
             <summary>
-            读取主键 - 只支持单主键（主键ID是自增的）
+            读取主键 - 只支持单主键
             </summary>
             <param name="type"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.AttrAssistant.GetKeyValue``1(``0)">
             <summary>
-            读取主键值 - 只支持单主键（主键ID是自增的）
+            读取主键值 - 只支持单主键
             </summary>
             <typeparam name="TEntity"></typeparam>
             <param name="entity"></param>
@@ -28,48 +28,48 @@
         </member>
         <member name="M:SinGooCMS.Ado.AttrAssistant.IsKey(System.Reflection.PropertyInfo)">
             <summary>
-            是否主键 - 只支持单主键（主键ID是自增的）
+            列是否主键 - 只支持单主键
             </summary>
             <param name="pi"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.AttrAssistant.IsNotMapped(System.Reflection.PropertyInfo)">
             <summary>
-            是否映射(自定义不属于表的字段需要NotMapped属性)
+            列是否映射(自定义不属于表的字段需要NotMapped属性)
             </summary>
             <param name="pi"></param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.#ctor(System.String,System.String,System.Boolean)">
+        <member name="F:SinGooCMS.Ado.DbAccess.DbAccessBase.dbProviderType">
             <summary>
-            构造函数
+            数据库类型 SqlServer、MySql、Oracle、Sqlite
             </summary>
-            <param name="_customConnStr">自定义连接字符串</param>
-            <param name="_customProviderName">自定义数据库类型</param>
-            <param name="_isAnalyze">是否分析</param>
         </member>
-        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.CreateProfiler(System.String)">
+        <member name="F:SinGooCMS.Ado.DbAccess.DbAccessBase.connStr">
             <summary>
-            创建分析器
+            连接字符串
             </summary>
-            <param name="title"></param>
+        </member>
+        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.GetObject(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            读取对象
+            </summary>
+            <param name="sql"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.GetObjectAsync(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            读取对象
+            </summary>
+            <param name="sql"></param>
+            <param name="parameters"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.PrepareCommand(System.Data.Common.DbConnection,System.String,System.Data.Common.DbParameter[],System.Data.CommandType)">
             <summary>
             初始化命令
             </summary>
-            <param name="cmd"></param>
-            <param name="conn"></param>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-            <param name="commandType"></param>
-        </member>
-        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.PrepareCommand(StackExchange.Profiling.Data.IDbProfiler,StackExchange.Profiling.Data.ProfiledDbConnection,System.String,System.Data.Common.DbParameter[],System.Data.CommandType)">
-            <summary>
-            初始化命令
-            </summary>
-            <param name="profiler"></param>
             <param name="conn"></param>
             <param name="sql"></param>
             <param name="parameters"></param>
@@ -82,25 +82,38 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.PrepareConn(StackExchange.Profiling.Data.IDbProfiler)">
-            <summary>
-            初始化连接
-            </summary>
-            <param name="profiler"></param>
-            <returns></returns>
-        </member>
         <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.PrepareAdapter">
             <summary>
             初始化适配器
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.DbAccess.DbAccessBase.PrepareAdapter(StackExchange.Profiling.Data.IDbProfiler)">
+        <member name="M:SinGooCMS.Ado.DbAccess.OracleAccess.UpdateModel``1(``0)">
             <summary>
-            初始化适配器
+            更新 - oracle参数的形式不同 其它的是@user,oracle的参数是:user
             </summary>
-            <param name="profiler"></param>
+            <typeparam name="T"></typeparam>
+            <param name="model"></param>
             <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.DbAccess.OracleAccess.UpdateModelAsync``1(``0)">
+            <summary>
+            异步更新 - oracle参数的形式不同 其它的是@user,oracle的参数是:user
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.DbAccess.SqlServerAccess.GetVerNo">
+            <summary>
+            读取版本号 sql2008=10,sql2012=11,sql2019=15;sql2012以上支持offset fatch next分页方式
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SinGooCMS.Ado.DbColumnInfo">
+            <summary>
+            数据库列信息
+            </summary>
         </member>
         <member name="P:SinGooCMS.Ado.DbColumnInfo.ColumnName">
             <summary>
@@ -147,11 +160,11 @@
             提供具体数据库操作对象
             </summary>
         </member>
-        <member name="M:SinGooCMS.Ado.DbProvider.CreateDbMaintenance(System.String,System.String)">
+        <member name="M:SinGooCMS.Ado.DbProvider.CreateDbMaintenance(SinGooCMS.Ado.DbProviderType,System.String)">
             <summary>
             创建Ado实例
             </summary>
-            <param name="dbType">数据库类型，对应SinGooCMS.DbType</param>
+            <param name="dbProviderType">数据库类型，对应SinGooCMS.DbType</param>
             <param name="customConnStr">自定义数据库连接</param>
             <returns></returns>
         </member>
@@ -160,18 +173,22 @@
             DDL对象
             </summary>
         </member>
-        <member name="M:SinGooCMS.Ado.DbProvider.Create(System.String,System.String,System.Boolean)">
+        <member name="M:SinGooCMS.Ado.DbProvider.Create(SinGooCMS.Ado.DbProviderType,System.String)">
             <summary>
             创建Ado实例
             </summary>
-            <param name="dbType">数据库类型，对应SinGooCMS.DbType</param>
+            <param name="dbProviderType">数据库类型，对应SinGooCMS.DbProviderType</param>
             <param name="customConnStr">自定义数据库连接</param>
-            <param name="isAnalyze">是否分析性能(建议在生产环境中不启用)</param>
             <returns></returns>
         </member>
         <member name="P:SinGooCMS.Ado.DbProvider.DbAccess">
             <summary>
             DML对象
+            </summary>
+        </member>
+        <member name="T:SinGooCMS.Ado.DbTableInfo">
+            <summary>
+            数据库表信息
             </summary>
         </member>
         <member name="P:SinGooCMS.Ado.DbTableInfo.TableName">
@@ -193,333 +210,403 @@
             <summary>
             创建参数
             </summary>
-            <param name="parameterName"></param>
-            <param name="value"></param>
-            <param name="parameterDirection"></param>
+            <param name="parameterName">参数名称</param>
+            <param name="value">参数值</param>
+            <param name="parameterDirection">参数方向 Input/Output</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecSQL(System.String,System.Data.Common.DbParameter[])">
             <summary>
             执行一条SQL语句
             </summary>
-            <param name="conn"></param>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetObject(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecSQLAsync(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            返回一个object对象
+            异步执行一条SQL语句
             </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetObjectAsync(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            异步返回一个object对象
-            </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValue``1(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            返回一个值
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValueAsync``1(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            异步返回一个值
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetDataReader(System.String,System.Data.Common.DbParameter[])">
             <summary>
             返回一个datareader
             </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetDataReaderAsync(System.String,System.Data.Common.DbParameter[])">
             <summary>
             异步返回一个datareader
             </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetListValue``1(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            返回值列表
-            </summary>
-            <typeparam name="T">一个基础类型 如 string int</typeparam>
-            <param name="sql">查询单个字段</param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetListValueAsync``1(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            异步返回值列表
-            </summary>
-            <typeparam name="T">一个基础类型 如 string int</typeparam>
-            <param name="sql">查询单个字段</param>
-            <param name="parameters"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetDataTable(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            返回一个datatable
-            </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetDataSet(System.String,System.Data.Common.DbParameter[])">
             <summary>
             返回一个dataset
             </summary>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModel``1(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetDataTable(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            返回一个实体类
+            返回一个datatable
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModelAsync``1(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValue``1(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            异步返回一个实体类
+            返回一个值
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <typeparam name="T">泛型：基础类型 如 string int</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValueAsync``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            异步返回一个值
+            </summary>
+            <typeparam name="T">泛型：基础类型 如 string int</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValueList``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            返回值列表
+            </summary>
+            <typeparam name="T">泛型：基础类型 如 string int</typeparam>
+            <param name="sql">查询单个字段</param>
+            <param name="parameters">参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetValueListAsync``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            异步返回值列表
+            </summary>
+            <typeparam name="T">泛型：基础类型 如 string int</typeparam>
+            <param name="sql">查询单个字段</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModel``1(System.Data.IDataReader)">
             <summary>
-            返回一个实体类
+            返回一个对象实例
             </summary>
             <typeparam name="T">实体</typeparam>
             <param name="reader">数据流</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModel``1(System.Object)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModel``1(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            返回一个实体类
+            返回一个对象实例
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="KeyValue"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModelAsync``1(System.Object)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetModelAsync``1(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            异步返回一个实体类
+            异步返回一个对象实例
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="KeyValue"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.Find``1(System.Object)">
+            <summary>
+            返回一个对象实例
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="keyValue">主键值（一般是自增主键）</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.FindAsync``1(System.Object)">
+            <summary>
+            异步返回一个对象实例
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="keyValue">主键值（一般是自增主键）</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetList``1(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            返回一个List
+            返回一个泛型集合
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetListAsync``1(System.String,System.Data.Common.DbParameter[])">
             <summary>
-            异步返回一个List
+            异步返回一个泛型集合
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="sql"></param>
-            <param name="parameters"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="sql">sql语句</param>
+            <param name="parameters">参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetList``1(System.Int32,System.String,System.String,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetList``1(System.Int32,System.String,System.String,System.String,System.Data.Common.DbParameter[])">
             <summary>
-            返回一个List
+            返回一个泛型集合
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="topNum"></param>
-            <param name="condition"></param>
-            <param name="sort"></param>
-            <param name="filter"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="topNum">提取记录数</param>
+            <param name="condition">条件</param>
+            <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
+            <param name="filter">可选字段/列，默认是所有 *</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetListAsync``1(System.Int32,System.String,System.String,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetListAsync``1(System.Int32,System.String,System.String,System.String,System.Data.Common.DbParameter[])">
             <summary>
-            异步返回一个List
+            异步返回一个泛型集合
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="topNum"></param>
-            <param name="condition"></param>
-            <param name="sort"></param>
-            <param name="filter"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="topNum">提取记录数</param>
+            <param name="condition">条件</param>
+            <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
+            <param name="filter">可选字段/列，默认是所有 *</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCount(System.String,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCount(System.String,System.String,System.Data.Common.DbParameter[])">
             <summary>
             获取记录数
             </summary>
-            <param name="tableName"></param>
-            <param name="condition"></param>
+            <param name="tableName">数据库表名</param>
+            <param name="condition">条件</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCountAsync(System.String,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCountAsync(System.String,System.String,System.Data.Common.DbParameter[])">
             <summary>
             异步获取记录数
             </summary>
-            <param name="tableName"></param>
-            <param name="condition"></param>
+            <param name="tableName">数据库表名</param>
+            <param name="condition">条件</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerDT(System.String,System.String,System.String,System.Int32,System.Int32,System.Int32@,System.Int32@,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCount``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            获取记录数
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="condition">条件</param>
+            <param name="conditionParameters">条件参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetCountAsync``1(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            异步获取记录数
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="condition">条件</param>
+            <param name="conditionParameters">条件参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerDT(System.String,System.String,System.String,System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
             <summary>
             分页返回一个数据表
             </summary>
-            <param name="tableName"></param>
-            <param name="condition"></param>
-            <param name="sort"></param>
-            <param name="pageIndex"></param>
-            <param name="pageSize"></param>
-            <param name="totalCount"></param>
-            <param name="totalPage"></param>
-            <param name="filter"></param>
+            <param name="tableName">数据库表名</param>
+            <param name="condition">条件</param>
+            <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
+            <param name="pageIndex">页号</param>
+            <param name="pageSize">每页记录数</param>
+            <param name="filter">可选字段/列，默认是所有 *</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerList``1(System.String,System.String,System.Int32,System.Int32,System.Int32@,System.Int32@,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerList``1(System.String,System.String,System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
             <summary>
-            分页
+            分页，并返回总记录数，总页数
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="condition"></param>
-            <param name="sort"></param>
-            <param name="pageIndex"></param>
-            <param name="pageSize"></param>
-            <param name="totalCount"></param>
-            <param name="totalPage"></param>
-            <param name="filter"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="condition">条件</param>
+            <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
+            <param name="pageIndex">页号</param>
+            <param name="pageSize">每页记录数</param>
+            <param name="filter">可选字段/列，默认是所有 *</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerListAsync``1(System.String,System.String,System.Int32,System.Int32,System.String)">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.GetPagerListAsync``1(System.String,System.String,System.Int32,System.Int32,System.String,System.Data.Common.DbParameter[])">
             <summary>
             异步分页
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="condition"></param>
-            <param name="sort"></param>
-            <param name="pageIndex"></param>
-            <param name="pageSize"></param>
-            <param name="totalCount"></param>
-            <param name="totalPage"></param>
-            <param name="filter"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.InsertModel``1(``0)">
-            <summary>
-            插入到数据库表并返回主键值（默认为自增主键）
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.InsertModelAsync``1(``0)">
-            <summary>
-            异步插入到数据库表并返回主键值（默认为自增主键）
-            </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="condition">条件</param>
+            <param name="sort">排序语句，可多条，如 Sort asc,AutoID desc</param>
+            <param name="pageIndex">页号</param>
+            <param name="pageSize">每页记录数</param>
+            <param name="filter">可选字段/列，默认是所有 *</param>
+            <param name="conditionParameters">条件参数集合</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.InsertModel``1(``0,System.String)">
             <summary>
             插入到指定表并返回主键值
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
-            <param name="tableName"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
+            <param name="tableName">数据库表名</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.InsertModelAsync``1(``0,System.String)">
             <summary>
             异步插入到指定表并返回主键值
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
-            <param name="tableName"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
+            <param name="tableName">数据库表名</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.UpdateModel``1(``0)">
             <summary>
             更新数据表
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.UpdateModelAsync``1(``0)">
             <summary>
             异步更新数据表
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.DeleteTable(System.String,System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.UpdateColumn``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            更新列
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="columns">要更新的列如 (p)=>new UserInfo{UserName="jsonlee"}</param>
+            <param name="condition">条件 如不提供将更新所有</param>
+            <param name="conditionParameters">条件参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.UpdateColumnAsync``1(System.Linq.Expressions.Expression{System.Func{``0,``0}},System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            异步更新列
+            </summary>
+            <typeparam name="T">泛型</typeparam>
+            <param name="columns">要更新的列如 (p)=>new UserInfo{UserName="jsonlee"}</param>
+            <param name="condition">条件 如不提供将更新所有</param>
+            <param name="conditionParameters">条件参数集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.Delete``1(System.Object)">
             <summary>
             从数据库表中删除数据
             </summary>
-            <param name="tableName"></param>
-            <param name="condition"></param>
-            <param name="parameters"></param>
+            <param name="keyValue">主键值</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.DeleteTableAsync(System.String,System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.DeleteAsync``1(System.Object)">
             <summary>
             异步从数据库表中删除数据
             </summary>
-            <param name="tableName"></param>
-            <param name="condition"></param>
-            <param name="parameters"></param>
+            <param name="keyValue">主键值</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.DeleteModel``1(``0)">
             <summary>
             删除实体
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.DeleteModelAsync``1(``0)">
             <summary>
             异步删除实体
             </summary>
-            <typeparam name="T"></typeparam>
-            <param name="model"></param>
+            <typeparam name="T">泛型</typeparam>
+            <param name="model">对象实例</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecTrans(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             执行事务
             </summary>
+            <param name="lstSql">多条sql语句</param>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecTransAsync(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            异步执行事务
+            </summary>
             <param name="lstSql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecTrans(System.Collections.Generic.IDictionary{System.String,System.Data.Common.DbParameter[]})">
+            <summary>
+            执行事务
+            </summary>
+            <param name="lstSql">多条sql语句</param>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecTransAsync(System.Collections.Generic.IDictionary{System.String,System.Data.Common.DbParameter[]})">
+            <summary>
+            异步执行事务
+            </summary>
+            <param name="lstSql">多条sql语句</param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecProc(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            执行存储过程
+            </summary>
+            <param name="commandText"></param>
+            <param name="arrParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecProcReValue(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            执行存储过程并返回值
+            </summary>
+            <param name="commandText"></param>
+            <param name="arrParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecProcReReader(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            执行存储过程并返回datareader
+            </summary>
+            <param name="commandText"></param>
+            <param name="arrParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecProcReDS(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            返回一个dataset
+            </summary>
+            <param name="commandText"></param>
+            <param name="arrParams"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IDbAccess.ExecProcReDT(System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            返回一个datatable
+            </summary>
+            <param name="commandText"></param>
+            <param name="arrParams"></param>
+            <returns></returns>
         </member>
         <member name="T:SinGooCMS.Ado.Interface.IDbMaintenance">
             <summary>
@@ -638,44 +725,45 @@
             <typeparam name="T"></typeparam>
             <param name="dt"></param>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IMySql.ExecProc(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.ExecOracleTrans(System.Collections.Generic.Dictionary{System.String,System.ValueTuple{System.String,System.Data.Common.DbParameter[]}})">
             <summary>
-            执行存储过程
+            执行多条sql，并返回影响的行数或返回的值
             </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
+            <param name="lstSql">REVALUE/NOVALUE,(sqlscripot,params)</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IMySql.ExecProcReValue(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.ExecOracleTransAsync(System.Collections.Generic.Dictionary{System.String,System.ValueTuple{System.String,System.Data.Common.DbParameter[]}})">
             <summary>
-            执行存储过程并返回值
+            异步执行多条sql，并返回影响的行数或返回的值
             </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
+            <param name="lstSql"></param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IMySql.ExecProcReReader(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.ExisSequence(System.String)">
             <summary>
-            执行存储过程并返回datareader
+            是否存在序列
             </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
+            <param name="sequenceName">序列名，全大写</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IMySql.ExecProcReDS(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.ExisSequenceAsync(System.String)">
             <summary>
-            返回一个dataset
+            是否存在序列
             </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
+            <param name="sequenceName">序列名，全大写</param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.IMySql.ExecProcReDT(System.String,System.Data.Common.DbParameter[])">
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.DelSequence(System.String)">
             <summary>
-            返回一个datatable
+            删除序列
             </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
+            <param name="sequenceName">序列名，全大写</param>
+        </member>
+        <member name="M:SinGooCMS.Ado.Interface.IOracle.DelSequenceAsync(System.String)">
+            <summary>
+            异步删除序列
+            </summary>
+            <param name="sequenceName">序列名，全大写</param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.Interface.ISqlServer.BulkInsert(System.Data.DataTable,System.String)">
@@ -692,70 +780,36 @@
             <typeparam name="T"></typeparam>
             <param name="dt"></param>
         </member>
-        <member name="M:SinGooCMS.Ado.Interface.ISqlServer.ExecProc(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            执行存储过程
-            </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.ISqlServer.ExecProcReValue(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            执行存储过程并返回值
-            </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.ISqlServer.ExecProcReReader(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            执行存储过程并返回datareader
-            </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.ISqlServer.ExecProcReDS(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            返回一个dataset
-            </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
-            <returns></returns>
-        </member>
-        <member name="M:SinGooCMS.Ado.Interface.ISqlServer.ExecProcReDT(System.String,System.Data.Common.DbParameter[])">
-            <summary>
-            返回一个datatable
-            </summary>
-            <param name="commandText"></param>
-            <param name="arrParams"></param>
-            <returns></returns>
-        </member>
         <member name="T:SinGooCMS.Ado.ReflectionBuilder`1">
             <summary>
             通过datareader反射出实体并填充值
             </summary>
             <typeparam name="T"></typeparam>
         </member>
-        <member name="M:SinGooCMS.Ado.ReflectionBuilder`1.Build(System.Data.IDataReader,System.String)">
+        <member name="M:SinGooCMS.Ado.ReflectionBuilder`1.Build(System.Data.IDataReader,SinGooCMS.Ado.DbProviderType)">
             <summary>
             赋值给实体,并返回实体
             </summary>
             <param name="reader"></param>
-            <param name="providerName"></param>
+            <param name="dbProviderType"></param>
             <returns></returns>
         </member>
-        <member name="M:SinGooCMS.Ado.ReflectionBuilder`1.CreateBuilder(System.Data.IDataReader)">
+        <member name="M:SinGooCMS.Ado.ReflectionBuilder`1.CreateBuilder(System.Data.IDataReader,SinGooCMS.Ado.DbProviderType)">
             <summary>
             创建实体
             </summary>
             <param name="reader"></param>
+            <param name="dbProviderType"></param>
             <returns></returns>
         </member>
         <member name="T:SinGooCMS.Ado.RefProperty">
             <summary>
             读取属性值
+            </summary>
+        </member>
+        <member name="P:SinGooCMS.Ado.Utils.ProviderType">
+            <summary>
+            获取数据库枚举类型
             </summary>
         </member>
         <member name="P:SinGooCMS.Ado.Utils.ProviderName">
@@ -767,6 +821,13 @@
             <summary>
             连接库连接字符串
             </summary>
+        </member>
+        <member name="M:SinGooCMS.Ado.StringExtension.IsNullOrEmpty(System.Object)">
+            <summary>
+            是否为null或者空串
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToByte(System.Object,System.Byte)">
             <summary>
@@ -781,6 +842,7 @@
             转化为短整型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToInt(System.Object,System.Int32)">
@@ -788,6 +850,7 @@
             转化为整型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToLong(System.Object,System.Int64)">
@@ -795,6 +858,7 @@
             转化为长整型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToBool(System.Object,System.Boolean)">
@@ -802,6 +866,7 @@
             转化为布尔型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToFloat(System.Object,System.Single)">
@@ -809,6 +874,7 @@
             转化为浮点型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToDouble(System.Object,System.Double)">
@@ -816,6 +882,7 @@
             转化为双精度数据类型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToDecimal(System.Object,System.Decimal)">
@@ -823,6 +890,7 @@
             转化为数据类型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToDateTime(System.Object)">
@@ -837,6 +905,7 @@
             转化为日期类型
             </summary>
             <param name="thisValue"></param>
+            <param name="defValue"></param>
             <returns></returns>
         </member>
         <member name="M:SinGooCMS.Ado.DataChangeExtension.ToIntArray(System.String)">
@@ -845,6 +914,11 @@
             </summary>
             <param name="ids"></param>
             <returns></returns>
+        </member>
+        <member name="T:SinGooCMS.Ado.DbProviderType">
+            <summary>
+            数据库类型
+            </summary>
         </member>
     </members>
 </doc>
