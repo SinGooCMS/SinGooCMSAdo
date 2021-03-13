@@ -4,11 +4,10 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SinGooCMS.Ado;
 using SinGooCMS.Ado.DbMaintenance;
 using SinGooCMS.Ado.Interface;
-using Assert = NUnit.Framework.Assert;
 
 namespace NetFrameworkTest
 {
@@ -24,7 +23,7 @@ namespace NetFrameworkTest
                 dbMaintenance.CreateTable("DbMaintenanceTest", new List<DbColumnInfo>() { new DbColumnInfo() { ColumnName = "AutoID", DataType = "int", IsIdentity = true, IsPrimarykey = true }, new DbColumnInfo() { ColumnName = "UserName", Length = 50 } });
         }
 
-        [Test]
+        [TestMethod]
         public void InsertTest()
         {
             //10万条记录 sqlite插入数据的效率实在是太慢了，我不得不停止，用在单机上是可以的
@@ -42,7 +41,7 @@ namespace NetFrameworkTest
             Console.WriteLine("共运行时长：" + watch.ElapsedMilliseconds + "毫秒");
         }
 
-        [Test]
+        [TestMethod]
         public void GetValueTest()
         {
             string val = dbSqliteAccess.GetValue<string>("select UserName from DbMaintenanceTest where 1=@param",
@@ -50,7 +49,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val);
         }
 
-        [Test]
+        [TestMethod]
         public void GetListValueTest()
         {
             var val = dbSqliteAccess.GetValueList<string>("select UserName from DbMaintenanceTest where 1=@param limit 10",
@@ -58,7 +57,7 @@ namespace NetFrameworkTest
             Console.WriteLine(val.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void GetDataTableTest()
         {
             var dt = dbSqliteAccess.GetDataTable("select * from DbMaintenanceTest where 1=@param limit 10",
@@ -67,7 +66,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", dt.Rows[0]["UserName"].ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest()
         {
             //GetList会返回多条记录。而GetModel只会取第一个记录并返回实体对象
@@ -76,14 +75,14 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val.UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest2()
         {
             var val = dbSqliteAccess.Find<DbMaintenanceTestInfo>(1); //读主键 1 的对象
             Assert.AreEqual(1, val.AutoID);
         }
 
-        [Test]
+        [TestMethod]
         public void GetPagerTest()
         {
             //以下2个参数将被传出
@@ -95,21 +94,21 @@ namespace NetFrameworkTest
             Assert.AreEqual(10, pagerData.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void UpdateTest()
         {
             dbSqliteAccess.UpdateModel(new DbMaintenanceTestInfo() { AutoID = 10, UserName = "刘备" });
             Assert.AreEqual("刘备", dbSqliteAccess.Find<DbMaintenanceTestInfo>(10).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public async Task UpdateColumnTest()
         {
             await dbSqliteAccess.UpdateColumnAsync<DbMaintenanceTestInfo>((p) => new DbMaintenanceTestInfo() { UserName = "赵云" }, "AutoID=@PKey", new DbParameter[] { dbSqliteAccess.MakeParam("@PKey", 1) }); //指定更新条件
             Assert.AreEqual("赵云", (await dbSqliteAccess.FindAsync<DbMaintenanceTestInfo>(1)).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest()
         {
             //15 被删除了，返回null
@@ -117,7 +116,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(null, dbSqliteAccess.Find<DbMaintenanceTestInfo>(15));
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest2()
         {
             //15 被删除了，返回null
@@ -125,7 +124,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(0, dbSqliteAccess.GetCount<DbMaintenanceTestInfo>("AutoID=16"));
         }
 
-        [Test]
+        [TestMethod]
         public void TransTest()
         {
             //事务具有原子性，所有要么同时成功，要么同时失败
@@ -138,7 +137,7 @@ namespace NetFrameworkTest
         }
 
         //异步测试 并不一定是按从上往下顺序执行的，多线程执行
-        [Test]
+        [TestMethod]
         public async Task GetAsyncTest()
         {
             var valTask = dbSqliteAccess.GetValueAsync<string>("select UserName from DbMaintenanceTest limit 1");

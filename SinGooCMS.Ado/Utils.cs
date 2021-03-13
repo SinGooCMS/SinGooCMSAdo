@@ -102,6 +102,21 @@ namespace SinGooCMS.Ado
             }
         }
 
+        /// <summary>
+        /// 数据库版本号
+        /// </summary>
+        public static int DbVersionNo
+        {
+            get
+            {
+#if NETSTANDARD2_1
+                return Configuration.GetSection("AppSettings")["DbVersionNo"]?.ToInt() ?? 0;
+#else
+                return System.Configuration.ConfigurationManager.AppSettings["DbVersionNo"]?.ToInt() ?? 0;
+#endif
+            }
+        }
+
         public static bool IsCharColumn(string dataType) =>
              (new string[] { "char", "varchar", "nvarchar" }).Contains(dataType.ToLower());
 

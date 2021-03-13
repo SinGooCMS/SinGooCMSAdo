@@ -5,11 +5,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NUnit.Framework;
 using SinGooCMS.Ado;
 using SinGooCMS.Ado.DbMaintenance;
 using SinGooCMS.Ado.Interface;
-using Assert = NUnit.Framework.Assert;
 
 namespace NetFrameworkTest
 {
@@ -30,7 +28,7 @@ namespace NetFrameworkTest
         /// <summary>
         /// 在插入数据的时候不要启用分析，否则会很慢
         /// </summary>
-        [Test]
+        [TestMethod]
         public void InsertTest()
         {
             //10万条记录 共运行时长：103741毫秒
@@ -47,7 +45,7 @@ namespace NetFrameworkTest
             Console.WriteLine("共运行时长：" + watch.ElapsedMilliseconds + "毫秒");
         }
 
-        [Test]
+        [TestMethod]
         public void ExistsSEQTest()
         {
             //删除序列
@@ -56,7 +54,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(true, oracle.ExisSequence("SEQ_" + "DbMaintenanceTest".ToUpper())); //是否存在序列
         }
 
-        [Test]
+        [TestMethod]
         public void GetValueTest()
         {
             string val = dbOracleAccess.GetValue<string>("select UserName from DbMaintenanceTest where 1=:param and rownum<=1",
@@ -64,7 +62,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val);
         }
 
-        [Test]
+        [TestMethod]
         public void GetDataTableTest()
         {
             var dt = dbOracleAccess.GetDataTable("select * from DbMaintenanceTest where 1=:param and rownum<=10",
@@ -73,7 +71,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", dt.Rows[0]["UserName"].ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void GetListValueTest()
         {
             var val = dbOracleAccess.GetValueList<string>("select UserName from DbMaintenanceTest where 1=:param and rownum<=10",
@@ -81,7 +79,7 @@ namespace NetFrameworkTest
             Console.WriteLine(val.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest()
         {
             //GetList会返回多条记录。而GetModel只会取第一个记录并返回实体对象
@@ -90,14 +88,14 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val.UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest2()
         {
             var val = dbOracleAccess.Find<DbMaintenanceTestInfo>(1); //读主键 1 的对象
             Assert.AreEqual(1, val.AutoID);
         }
 
-        [Test]
+        [TestMethod]
         public void GetPagerTest()
         {
             //以下2个参数将被传出
@@ -109,21 +107,21 @@ namespace NetFrameworkTest
             Assert.AreEqual(25, pagerData.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void UpdateTest()
         {
             dbOracleAccess.UpdateModel(new DbMaintenanceTestInfo() { AutoID = 10, UserName = "刘备" });
             Assert.AreEqual("刘备", dbOracleAccess.Find<DbMaintenanceTestInfo>(10).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public async Task UpdateColumnTest()
         {
             await dbOracleAccess.UpdateColumnAsync<DbMaintenanceTestInfo>((p) => new DbMaintenanceTestInfo() { UserName = "赵云" }, "AutoID=@PKey", new DbParameter[] { dbOracleAccess.MakeParam("@PKey", 1) }); //指定更新条件
             Assert.AreEqual("赵云", (await dbOracleAccess.FindAsync<DbMaintenanceTestInfo>(1)).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest()
         {
             //15 被删除了，返回null
@@ -131,7 +129,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(null, dbOracleAccess.Find<DbMaintenanceTestInfo>(15));
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest2()
         {
             //16 被删除了，返回null
@@ -139,7 +137,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(null, dbOracleAccess.Find<DbMaintenanceTestInfo>(16));
         }
 
-        [Test]
+        [TestMethod]
         public void TransTest()
         {
             //事务具有原子性，所有要么同时成功，要么同时失败
@@ -152,7 +150,7 @@ namespace NetFrameworkTest
         }
 
         //异步测试 并不一定是按从上往下顺序执行的，多线程执行
-        [Test]
+        [TestMethod]
         public async Task GetAsyncTest()
         {
             var valTask = dbOracleAccess.GetValueAsync<string>("select UserName from DbMaintenanceTest where rownum<=1");

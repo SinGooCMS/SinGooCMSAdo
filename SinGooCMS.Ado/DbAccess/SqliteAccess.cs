@@ -11,14 +11,14 @@ namespace SinGooCMS.Ado.DbAccess
 {
     public class SqliteAccess : DbAccessBase, IDbAccess
     {
-        public SqliteAccess(string _customConnStr)
-            : base(_customConnStr, DbProviderType.Sqlite)
+        public SqliteAccess(string _customConnStr, int _dbVersionNo = 0)
+            : base(_customConnStr, DbProviderType.Sqlite, _dbVersionNo)
         {
             //
         }
 
         public SqliteAccess() :
-            this(Utils.DefConnStr)
+            this(Utils.DefConnStr, Utils.DbVersionNo)
         {
             //默认连接字符串
         }
@@ -178,14 +178,22 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
+                //NotMapped 是自定义的字段，不属于表，所以要排除，Key默认是有值的，自增int或者GUID
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
 
-                    builderSQL.Append(property.Name + " , ");
-                    builderParams.Append("@" + property.Name + " , ");
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue; //null无法加入到参数，跳过
+
+                //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                //因此设置新的默认值是 1900-1-1
+                if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                    obj = new DateTime(1900, 1, 1);
+
+                builderSQL.Append(property.Name + " , ");
+                builderParams.Append("@" + property.Name + " , ");
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
@@ -211,14 +219,22 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
+                //NotMapped 是自定义的字段，不属于表，所以要排除，Key默认是有值的，自增int或者GUID
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
 
-                    builderSQL.Append(property.Name + " , ");
-                    builderParams.Append("@" + property.Name + " , ");
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue; //null无法加入到参数，跳过
+
+                //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                //因此设置新的默认值是 1900-1-1
+                if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                    obj = new DateTime(1900, 1, 1);
+
+                builderSQL.Append(property.Name + " , ");
+                builderParams.Append("@" + property.Name + " , ");
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.IO;
 using System.Reflection;
 using SinGooCMS.Ado.Interface;
 
@@ -13,19 +14,18 @@ namespace SinGooCMS.Ado
         #region DDL
 
         /// <summary>
-        /// 创建Ado实例
+        /// 创建表维护实例
         /// </summary>
         /// <param name="dbProviderType">数据库类型，对应SinGooCMS.DbType</param>
         /// <param name="customConnStr">自定义数据库连接</param>
         /// <returns></returns>
         public static IDbMaintenance CreateDbMaintenance(DbProviderType dbProviderType, string customConnStr = "")
         {
-            Assembly tempAssembly = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + "SinGooCMS.Ado.dll");
+            Assembly tempAssembly = Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SinGooCMS.Ado.dll"));
             Type type = tempAssembly.GetType($"SinGooCMS.Ado.DbMaintenance.{dbProviderType}DbMaintenance");
-            if (!customConnStr.IsNullOrEmpty())
-                return (IDbMaintenance)(Activator.CreateInstance(type, new string[] { customConnStr }));
-            else
-                return (IDbMaintenance)(Activator.CreateInstance(type));
+            return !customConnStr.IsNullOrEmpty()
+                ? (IDbMaintenance)(Activator.CreateInstance(type, new string[] { customConnStr }))
+                : (IDbMaintenance)(Activator.CreateInstance(type));
         }
 
         private static IDbMaintenance _dbMaintenance = null;
@@ -48,22 +48,16 @@ namespace SinGooCMS.Ado
 
         #endregion
 
-        #region DML
+        #region DML        
 
         /// <summary>
         /// 创建Ado实例
         /// </summary>
-        /// <param name="dbProviderType">数据库类型，对应SinGooCMS.DbProviderType</param>
-        /// <param name="customConnStr">自定义数据库连接</param>
+        /// <param name="options">选项</param>
         /// <returns></returns>
-        public static IDbAccess Create(DbProviderType dbProviderType, string customConnStr = "")
+        public static IDbAccess Create(DbAccessOptions options)
         {
-            Assembly tempAssembly = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + "SinGooCMS.Ado.dll");
-            Type type = tempAssembly.GetType($"SinGooCMS.Ado.DbAccess.{dbProviderType}Access");
-            if (!customConnStr.IsNullOrEmpty())
-                return (IDbAccess)(Activator.CreateInstance(type, new object[] { customConnStr }));
-            else
-                return (IDbAccess)(Activator.CreateInstance(type)); //默认的连接
+            return Create(options.DbProviderType, options.ConnectionString, options.DbVersionNo);
         }
 
         private static IDbAccess _dbAccess = null;
@@ -82,6 +76,22 @@ namespace SinGooCMS.Ado
                     return _dbAccess;
                 }
             }
+        }
+
+        /// <summary>
+        /// 创建Ado实例
+        /// </summary>
+        /// <param name="dbProviderType">数据库类型，对应SinGooCMS.DbProviderType</param>
+        /// <param name="customConnStr">数据库连接字符串</param>
+        /// <param name="dbVersionNo">数据库版本号</param>
+        /// <returns></returns>
+        public static IDbAccess Create(DbProviderType dbProviderType, string customConnStr = "", int dbVersionNo = 0)
+        {
+            Assembly tempAssembly = Assembly.LoadFrom(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SinGooCMS.Ado.dll"));
+            Type type = tempAssembly.GetType($"SinGooCMS.Ado.DbAccess.{dbProviderType}Access");
+            return !customConnStr.IsNullOrEmpty()
+                ? (IDbAccess)(Activator.CreateInstance(type, new object[] { customConnStr, dbVersionNo }))
+                : (IDbAccess)(Activator.CreateInstance(type)); //默认的连接
         }
 
         #endregion

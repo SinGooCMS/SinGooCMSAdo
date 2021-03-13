@@ -30,11 +30,22 @@ namespace SinGooCMS.Ado.DbAccess
         /// 连接字符串
         /// </summary>
         protected readonly string connStr;
+        /// <summary>
+        /// 数据库版本号
+        /// </summary>
+        protected readonly int dbVersionNo;
 
-        public DbAccessBase(string _customConnStr, DbProviderType _dbProviderType = DbProviderType.SqlServer)
+        /// <summary>
+        /// 构造方法
+        /// </summary>
+        /// <param name="_customConnStr">连接字符串</param>
+        /// <param name="_dbProviderType">数据库类型，默认是sqlserver</param>
+        /// <param name="_dbVersionNo">版本号，0表示不区分</param>
+        public DbAccessBase(string _customConnStr, DbProviderType _dbProviderType = DbProviderType.SqlServer, int _dbVersionNo = 0)
         {
             this.connStr = _customConnStr;
             this.dbProviderType = _dbProviderType;
+            this.dbVersionNo = _dbVersionNo;
         }
 
         #region 参数
@@ -275,13 +286,17 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (var property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
-                    builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                //关键字key 和 不属于表的属性NotMapped 不更新
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
+
+                //没有提供数据的字段也不处理
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue;
+
+                builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
@@ -305,13 +320,17 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (var property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
-                    builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                //关键字key 和 不属于表的属性NotMapped 不更新
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
+
+                //没有提供数据的字段也不处理
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue;
+
+                builderSQL.AppendFormat("{0}=@{0} , ", property.Name);
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);

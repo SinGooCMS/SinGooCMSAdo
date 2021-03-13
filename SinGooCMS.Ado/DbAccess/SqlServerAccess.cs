@@ -19,14 +19,14 @@ namespace SinGooCMS.Ado.DbAccess
 {
     public class SqlServerAccess : DbAccessBase, IDbAccess, ISqlServer
     {
-        public SqlServerAccess(string _customConnStr)
-            : base(_customConnStr, DbProviderType.SqlServer)
+        public SqlServerAccess(string _customConnStr, int _dbVersionNo = 0)
+            : base(_customConnStr, DbProviderType.SqlServer, _dbVersionNo)
         {
             //
         }
 
         public SqlServerAccess()
-            : this(Utils.DefConnStr)
+            : this(Utils.DefConnStr, Utils.DbVersionNo)
         {
             //默认连接字符串
         }
@@ -101,17 +101,19 @@ namespace SinGooCMS.Ado.DbAccess
             int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            if (GetVerNo().GetAwaiter().GetResult() >= 11)
+            if (dbVersionNo >= 11)
             {
+                //sqlserver2012及以上可用
                 builder.AppendFormat(@"select {0}
                                     from {1} as {6}
                                     where {2}
                                     order by {3}
                                     offset {4} rows fetch next {5} rows only",
-                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+                                    filter, tableName, condition, sort, offsetPosition, pageSize, Utils.SinGooPagerAlias);
             }
             else
             {
+                //sqlserver2005及以上可用
                 builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
                                     from  {1}
@@ -126,6 +128,9 @@ namespace SinGooCMS.Ado.DbAccess
 
         public override IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
+            if (sort.IsNullOrEmpty())
+                throw new ArgumentNullException("sort"); //sort参数必填
+
             var lstResult = new List<T>();
             T tItem = default(T);
             string tableName = AttrAssistant.GetTableName(typeof(T)); //表名
@@ -140,17 +145,19 @@ namespace SinGooCMS.Ado.DbAccess
             int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            if (GetVerNo().GetAwaiter().GetResult() >= 11)
+            if (dbVersionNo >= 11)
             {
+                //sqlserver2012及以上可用
                 builder.AppendFormat(@"select {0}
                                     from {1} as {6}
                                     where {2}
                                     order by {3}
                                     offset {4} rows fetch next {5} rows only",
-                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+                                    filter, tableName, condition, sort, offsetPosition, pageSize, Utils.SinGooPagerAlias);
             }
             else
             {
+                //sqlserver2005及以上可用
                 builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
                                     from  {1}
@@ -173,6 +180,9 @@ namespace SinGooCMS.Ado.DbAccess
         }
         public override async Task<IEnumerable<T>> GetPagerListAsync<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null)
         {
+            if (sort.IsNullOrEmpty())
+                throw new ArgumentNullException("sort"); //sort参数必填
+
             var lstResult = new List<T>();
             T tItem = default(T);
             string tableName = AttrAssistant.GetTableName(typeof(T)); //表名
@@ -187,17 +197,19 @@ namespace SinGooCMS.Ado.DbAccess
             int endPosition = pageIndex * pageSize;
 
             var builder = new StringBuilder();
-            if (await GetVerNo() >= 11)
+            if (dbVersionNo >= 11)
             {
+                //sqlserver2012及以上可用
                 builder.AppendFormat(@"select {0}
                                     from {1} as {6}
                                     where {2}
                                     order by {3}
                                     offset {4} rows fetch next {5} rows only",
-                                    filter, tableName, condition, sort, offsetPosition, endPosition, Utils.SinGooPagerAlias);
+                                    filter, tableName, condition, sort, offsetPosition, pageSize, Utils.SinGooPagerAlias);
             }
             else
             {
+                //sqlserver2005及以上可用
                 builder.AppendFormat(@"select {0}
                                 from(select row_number() over(order by {3}) as rownum,*
                                     from  {1}
@@ -237,15 +249,22 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除 如果是自增Key，也要加上NotMapped，因为有可能key是非自增列
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
+                //NotMapped 是自定义的字段，不属于表，所以要排除，Key默认是有值的，自增int或者GUID
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
 
-                    builderSQL.Append(property.Name + " , ");
-                    builderParams.Append("@" + property.Name + " , ");
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue; //null无法加入到参数，跳过
+
+                //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                //因此设置新的默认值是 1900-1-1
+                if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                    obj = new DateTime(1900, 1, 1);
+
+                builderSQL.Append(property.Name + " , ");
+                builderParams.Append("@" + property.Name + " , ");
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
@@ -271,15 +290,22 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除 如果是自增Key，也要加上NotMapped，因为有可能key是非自增列
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
+                //NotMapped 是自定义的字段，不属于表，所以要排除，Key默认是有值的，自增int或者GUID
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
 
-                    builderSQL.Append(property.Name + " , ");
-                    builderParams.Append("@" + property.Name + " , ");
-                    lstParams.Add(MakeParam("@" + property.Name, obj));
-                }
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue; //null无法加入到参数，跳过
+
+                //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                //因此设置新的默认值是 1900-1-1
+                if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                    obj = new DateTime(1900, 1, 1);
+
+                builderSQL.Append(property.Name + " , ");
+                builderParams.Append("@" + property.Name + " , ");
+                lstParams.Add(MakeParam("@" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);

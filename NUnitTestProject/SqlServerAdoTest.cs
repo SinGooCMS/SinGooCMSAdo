@@ -18,7 +18,7 @@ namespace NUnitTestProject
     public class SqlServerAdoTest
     {
         IDbAccess dbSqlServerAccess => DbProvider.Create(DbProviderType.SqlServer, "server=(local);database=TestDB;uid=sa;pwd=123");
-        ISqlServer sqlserver=(ISqlServer)DbProvider.Create(DbProviderType.SqlServer, "server=(local);database=TestDB;uid=sa;pwd=123");
+        ISqlServer sqlserver = (ISqlServer)DbProvider.Create(DbProviderType.SqlServer, "server=(local);database=TestDB;uid=sa;pwd=123");
         IDbMaintenance dbMaintenance => new SqlServerDbMaintenance().Set(dbSqlServerAccess);
 
         public SqlServerAdoTest()
@@ -168,10 +168,10 @@ namespace NUnitTestProject
             watch.Start();
 
             var dt = new DataTable();
-            dt.Columns.Add("AutoID",typeof(int));
+            dt.Columns.Add("AutoID", typeof(int));
             dt.Columns.Add("UserName", typeof(string));
 
-            for(var i=0;i<1000000;i++)
+            for (var i = 0; i < 1000000; i++)
             {
                 var dr = dt.NewRow();
                 dr["AutoID"] = 0;

@@ -19,14 +19,14 @@ namespace SinGooCMS.Ado.DbAccess
 
     public class OracleAccess : DbAccessBase, IDbAccess, IOracle
     {
-        public OracleAccess(string _customConnStr)
-            : base(_customConnStr, DbProviderType.Oracle)
+        public OracleAccess(string _customConnStr, int _dbVersionNo = 0)
+            : base(_customConnStr, DbProviderType.Oracle, _dbVersionNo)
         {
             //
         }
 
         public OracleAccess() :
-            this(Utils.DefConnStr)
+            this(Utils.DefConnStr, Utils.DbVersionNo)
         {
             //默认连接字符串
         }
@@ -218,16 +218,26 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (PropertyInfo property in arrProperty)
             {
                 //oracle没有自动增长的列，创建了序列也要主动赋值
-                if (AttrAssistant.IsKey(property) && property.PropertyType.FullName == "System.Int32")
+                if (AttrAssistant.IsKey(property) && property.PropertyType.Name == "Int32")
                 {
                     isKeyAutoSEQ = true;
                     builderSQL.Append(property.Name + " , ");
                     builderParams.AppendFormat("SEQ_{0}.nextval, ", tableName.ToUpper());
                 }
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                else if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                else
                 {
+                    //NotMapped 是自定义的字段，不属于表，所以要排除，非自增Key不处理
+                    if (AttrAssistant.IsNotMapped(property) || (AttrAssistant.IsKey(property) && property.PropertyType.Name != "Int32"))
+                        continue;
+
                     object obj = property.GetValue(model, null);
+                    if (obj == null)
+                        continue; //null无法加入到参数，跳过
+
+                    //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                    //因此设置新的默认值是 1900-1-1
+                    if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                        obj = new DateTime(1900, 1, 1);
 
                     builderSQL.Append(property.Name + " , ");
                     builderParams.Append(":" + property.Name + " , ");
@@ -271,16 +281,26 @@ namespace SinGooCMS.Ado.DbAccess
             foreach (PropertyInfo property in arrProperty)
             {
                 //oracle没有自动增长的列，创建了序列也要主动赋值
-                if (AttrAssistant.IsKey(property) && property.PropertyType.FullName == "System.Int32")
+                if (AttrAssistant.IsKey(property) && property.PropertyType.Name == "Int32")
                 {
                     isKeyAutoSEQ = true;
                     builderSQL.Append(property.Name + " , ");
-                    builderParams.Append("SEQ_" + tableName + ".nextval, ");
+                    builderParams.AppendFormat("SEQ_{0}.nextval, ", tableName.ToUpper());
                 }
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                else if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
+                else
                 {
+                    //NotMapped 是自定义的字段，不属于表，所以要排除，非自增Key不处理
+                    if (AttrAssistant.IsNotMapped(property) || (AttrAssistant.IsKey(property) && property.PropertyType.Name != "Int32"))
+                        continue;
+
                     object obj = property.GetValue(model, null);
+                    if (obj == null)
+                        continue; //null无法加入到参数，跳过
+
+                    //日期类型没有值时，默认0001-1-1报错：SqlDateTime overflow. Must be between 1/1/1753 12:00:00 AM and 12/31/9999 11:59:59 PM
+                    //因此设置新的默认值是 1900-1-1
+                    if (property.PropertyType.Name.Equals("DateTime") && ((DateTime)obj).Equals(new DateTime(0001, 1, 1)))
+                        obj = new DateTime(1900, 1, 1);
 
                     builderSQL.Append(property.Name + " , ");
                     builderParams.Append(":" + property.Name + " , ");
@@ -326,13 +346,17 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
-                    builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
-                    lstParams.Add(MakeParam(":" + property.Name, obj));
-                }
+                //关键字key 和 不属于表的属性NotMapped 不更新
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
+
+                //没有提供数据的字段也不处理
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue;
+
+                builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
+                lstParams.Add(MakeParam(":" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);
@@ -362,13 +386,17 @@ namespace SinGooCMS.Ado.DbAccess
 
             foreach (PropertyInfo property in arrProperty)
             {
-                //NotMapped 是自定义的字段，不属于表，所以要排除
-                if (!AttrAssistant.IsKey(property) && !AttrAssistant.IsNotMapped(property))
-                {
-                    object obj = property.GetValue(model, null);
-                    builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
-                    lstParams.Add(MakeParam(":" + property.Name, obj));
-                }
+                //关键字key 和 不属于表的属性NotMapped 不更新
+                if (AttrAssistant.IsKey(property) || AttrAssistant.IsNotMapped(property))
+                    continue;
+
+                //没有提供数据的字段也不处理
+                object obj = property.GetValue(model, null);
+                if (obj == null)
+                    continue;
+
+                builderSQL.AppendFormat("{0}=:{0} , ", property.Name);
+                lstParams.Add(MakeParam(":" + property.Name, obj));
             }
 
             builderSQL.Remove(builderSQL.Length - 2, 2);

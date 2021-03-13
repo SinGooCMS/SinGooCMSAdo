@@ -248,7 +248,7 @@ namespace SinGooCMS.Ado.Interface
         DataTable GetPagerDT(string tableName, string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null);
 
         /// <summary>
-        /// 分页，并返回总记录数，总页数
+        /// 返回分页记录
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="condition">条件</param>
@@ -260,7 +260,7 @@ namespace SinGooCMS.Ado.Interface
         /// <returns></returns>
         IEnumerable<T> GetPagerList<T>(string condition, string sort, int pageIndex, int pageSize, string filter = "*", DbParameter[] conditionParameters = null) where T : class;
         /// <summary>
-        /// 异步分页
+        /// 异步返回分页记录
         /// </summary>
         /// <typeparam name="T">泛型</typeparam>
         /// <param name="condition">条件</param>

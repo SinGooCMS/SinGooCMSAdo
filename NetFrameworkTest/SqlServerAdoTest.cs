@@ -8,11 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NUnit.Framework;
 using SinGooCMS.Ado;
 using SinGooCMS.Ado.DbMaintenance;
 using SinGooCMS.Ado.Interface;
-using Assert = NUnit.Framework.Assert;
 
 namespace NetFrameworkTest
 {
@@ -33,7 +31,7 @@ namespace NetFrameworkTest
         /// <summary>
         /// 在插入数据的时候不要启用分析，否则会很慢
         /// </summary>
-        [Test]
+        [TestMethod]
         public void InsertTest()
         {
             //10万条记录 共运行时长：31086毫秒
@@ -53,7 +51,7 @@ namespace NetFrameworkTest
         /// <summary>
         /// 添加到无主键表
         /// </summary>
-        [Test]
+        [TestMethod]
         public async Task InsertTest2()
         {
             //动态类型
@@ -76,7 +74,7 @@ namespace NetFrameworkTest
                 });
         }
 
-        [Test]
+        [TestMethod]
         public void GetValueTest()
         {
             string val = dbSqlServerAccess.GetValue<string>("select  top 1 UserName from DbMaintenanceTest where 1=@param",
@@ -84,7 +82,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val);
         }
 
-        [Test]
+        [TestMethod]
         public void GetDataTableTest()
         {
             var dt = dbSqlServerAccess.GetDataTable("select  top 10 * from DbMaintenanceTest where 1=@param",
@@ -93,7 +91,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", dt.Rows[0]["UserName"].ToString());
         }
 
-        [Test]
+        [TestMethod]
         public void GetListValueTest()
         {
             var val = dbSqlServerAccess.GetValueList<string>("select  top 10 UserName from DbMaintenanceTest where 1=@param",
@@ -101,7 +99,7 @@ namespace NetFrameworkTest
             Console.WriteLine(val.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest()
         {
             //GetList会返回多条记录。而GetModel只会取第一个记录并返回实体对象
@@ -110,7 +108,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("jsonlee", val.UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void GetModelTest2()
         {
             var model1 = dbSqlServerAccess.Find<DbMaintenanceTestInfo>(1); //读主键 1 的对象
@@ -120,7 +118,7 @@ namespace NetFrameworkTest
             Assert.AreEqual("李四", model2.Name);
         }
 
-        [Test]
+        [TestMethod]
         public void GetPagerTest()
         {
             //以下2个参数将被传出
@@ -132,21 +130,21 @@ namespace NetFrameworkTest
             Assert.AreEqual(10, pagerData.Count());
         }
 
-        [Test]
+        [TestMethod]
         public void UpdateTest()
         {
             dbSqlServerAccess.UpdateModel(new DbMaintenanceTestInfo() { AutoID = 10, UserName = "刘备" });
             Assert.AreEqual("刘备", dbSqlServerAccess.Find<DbMaintenanceTestInfo>(10).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public async Task UpdateColumnTest()
         {
             await dbSqlServerAccess.UpdateColumnAsync<DbMaintenanceTestInfo>((p) => new DbMaintenanceTestInfo() { UserName = "赵云" }, "AutoID=@PKey", new DbParameter[] { dbSqlServerAccess.MakeParam("@PKey", 1) }); //指定更新条件
             Assert.AreEqual("赵云", (await dbSqlServerAccess.FindAsync<DbMaintenanceTestInfo>(1)).UserName);
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest()
         {
             //15 被删除了，返回null
@@ -154,7 +152,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(null, dbSqlServerAccess.Find<DbMaintenanceTestInfo>(15));
         }
 
-        [Test]
+        [TestMethod]
         public void DeleteTest2()
         {
             //16 被删除了，返回null
@@ -162,7 +160,7 @@ namespace NetFrameworkTest
             Assert.AreEqual(null, dbSqlServerAccess.Find<DbMaintenanceTestInfo>(16));
         }
 
-        [Test]
+        [TestMethod]
         public void BulkInsert()
         {
             //7.9秒
@@ -187,7 +185,7 @@ namespace NetFrameworkTest
             Console.WriteLine("共运行时长：" + watch.ElapsedMilliseconds + "毫秒");
         }
 
-        [Test]
+        [TestMethod]
         public void TransTest()
         {
             //事务具有原子性，所有要么同时成功，要么同时失败
@@ -200,7 +198,7 @@ namespace NetFrameworkTest
         }
 
         //异步测试 并不一定是按从上往下顺序执行的，多线程执行
-        [Test]
+        [TestMethod]
         public async Task GetAsyncTest()
         {
             var valTask = dbSqlServerAccess.GetValueAsync<string>("select top 1 UserName from DbMaintenanceTest");
